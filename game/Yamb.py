@@ -95,13 +95,12 @@ class Column:
         """
         :returns True if writing is successful
         """
-        if self.fields[index].is_unlocked():
-            self.fields[index].write(aux.calc_val(dices, index, throws))
-            self.unlock_next_field(index)
-            return True
-        else:
-            self.write_first(dices, throws)
-        return False
+        if 0 <= index <= 13:
+            if self.fields[index].is_unlocked():  # nested ifs just to be sure "self.fields[index]" indexing is valid
+                self.fields[index].write(aux.calc_val(dices, index, throws))
+                self.unlock_next_field(index)
+                return True
+        self.write_first(dices, throws)
 
     def write_first(self, dices, throws):
         for index in range(len(self.fields)):
@@ -125,23 +124,26 @@ class Yamb:
         return self.done
 
     def get_throws(self):
+        # TODO value should be normalized
         return self.throws
 
     def get_all_fields(self):
+        # TODO values should be normalized
         ret = []
         for column in self.table:
             for field in column.fields:
-                ret.append(field.get_val)
-                if field.is_unlocked:
+                ret.append(field.get_val())
+                if field.is_unlocked():
                     ret.append(1)
                 else:
                     ret.append(0)
         return ret
 
     def get_dices(self):
+        # TODO values should be normalized
         ret = []
         for dice in self.dices:
-            ret.append(dice.get_val)
+            ret.append(dice.get_val())
         return ret
 
     def roll_dices(self, dice_index=None):
@@ -171,7 +173,7 @@ class Yamb:
     def invalid_action(self):
         wrote = False
         for column in self.table:
-            if column.write_first():
+            if column.write_first(self.dices, self.throws):
                 wrote = True
                 break
         if not wrote:  # table is full, game is done
@@ -189,8 +191,10 @@ class Yamb:
         #   if not, it is rolling dices again
 
     def write_result(self, column_index, field_index):
-        self.table[column_index].write_result(field_index, self.dices, self.throws)
-        self.throws = 0
+        if 0 <= column_index <= 15 :
+            self.table[column_index].write_result(field_index, self.dices, self.throws)
+        else:
+            self.invalid_action()
 
     def get_table_sum(self):
         """
