@@ -104,6 +104,7 @@ class NeuralNetwork:
         self.game = yamb.Yamb(table)
 
     def play_game(self, iterations=1):
+        self.new_game()
         for _ in range(iterations):
             self.new_game()
             while not self.game.is_done():
@@ -145,5 +146,4 @@ class NeuralNetwork:
 
 if __name__ == '__main__':
     nn = NeuralNetwork(500)
-    nn.new_game()
-    nn.play_game()
+    nn.play_game(20)
