@@ -79,9 +79,9 @@ class Column:
         #  type == 3 is unlocked only on 1st throw
         if self.type == 4:
             # unlocking only fields that are locked and empty and in range
-            if not self.fields[index + 1].is_unlocked() and self.fields[index + 1].get_val() is None and index + 1 < 12:
+            if index + 1 < 12 and not self.fields[index + 1].is_unlocked() and self.fields[index + 1].get_val() is None:
                 self.fields[index + 1].unlock()
-            if not self.fields[index - 1].is_unlocked() and self.fields[index - 1].get_val() is None and index - 1 > 0:
+            if index - 1 > 0 and not self.fields[index - 1].is_unlocked() and self.fields[index - 1].get_val() is None:
                 self.fields[index - 1].unlock()
         if self.type == 5:
             # if index is in upper section, unlock only upper field
@@ -95,7 +95,7 @@ class Column:
         """
         :returns True if writing is successful
         """
-        if 0 <= index <= 13:
+        if 0 <= index <= 12:
             if self.fields[index].is_unlocked():  # nested ifs just to be sure "self.fields[index]" indexing is valid
                 self.fields[index].write(aux.calc_val(dices, index, throws))
                 self.unlock_next_field(index)
@@ -119,6 +119,7 @@ class Yamb:
         self.dices = [Dice() for _ in range(6)]
         self.throws = 0
         self.done = False
+        self.fields_filled = 0
 
     def is_done(self):
         return self.done
@@ -157,7 +158,7 @@ class Yamb:
                 dice.roll()
         else:
             for index in dice_index:
-                if 1 <= index <= 6:
+                if 0 <= index <= 5:
                     self.dices[index].roll()
                 else:
                     self.invalid_action()
@@ -184,14 +185,24 @@ class Yamb:
         """
         Next action depends on output of NN which means
         next invoked function(and their parameters) depends on decoded value
+        decoded = [0, dice index] or
+        decoded = [1, column index, row index]
         """
-        # TODO
-        #   if next action is writing result, this func has to set some flag
-        #   that indicates prematurely ending turn
-        #   if not, it is rolling dices again
+        if self.throws <= 3:
+            if decoded[0] == 0:
+                self.roll_dices(decoded[1])
+                return False
+            else:
+                self.write_result(decoded[1], decoded[2])
+                return True
+        else:
+            self.invalid_action()
+            return True
 
     def write_result(self, column_index, field_index):
-        if 0 <= column_index <= 15 :
+
+        self.throws = 0
+        if 0 <= column_index <= 5:
             self.table[column_index].write_result(field_index, self.dices, self.throws)
         else:
             self.invalid_action()
@@ -210,9 +221,26 @@ class Yamb:
                     upper_sum += column.fields[index].get_val()
                 if upper_sum > 60:  # upper sum is necessary because of bonus, both are tied to current column
                     sum1 += upper_sum + 30
-                sum2 = column.fields[0].get_val()*(column.fields[6].get_val() - column.fields[7].get_val()) # ones*(max-min)
+                else:
+                    sum1 += upper_sum
+                sum2 += column.fields[0].get_val()*(column.fields[6].get_val() - column.fields[7].get_val()) # ones*(max-min)
                 for index in range(8, 13):  # lower section
                     sum3 += column.fields[index].get_val()
+            if sum2 < 0:
+                sum2 = 0
             return sum1+sum2+sum3
         else:
             return 0
+
+    def print_table(self):
+        print("top2bot\t", "free\t", "bot2top\t", "first-only\t", "top&bot\t", "middle\t")
+        for i in range(13):
+            if i == 6 or i == 8:
+                print("\n")
+            print(self.table[0].fields[i].get_val(), "\t\t",
+                  self.table[1].fields[i].get_val(), "\t\t",
+                  self.table[2].fields[i].get_val(), "\t\t\t",
+                  self.table[3].fields[i].get_val(), "\t\t\t",
+                  self.table[4].fields[i].get_val(), "\t\t\t",
+                  self.table[5].fields[i].get_val()
+                  )

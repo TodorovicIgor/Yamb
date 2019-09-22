@@ -16,13 +16,16 @@ def calc_val(dices, i, throws):
         for dice in dices:
             sum = dice.get_val()
         return sum
-    elif i == 8 and has_straight(dices):
-        if throws == 0:
-            return 66
-        if throws == 1:
-            return 56
-        if throws == 2:
-            return 46
+    elif i == 8:
+        if has_straight(dices):
+            if throws == 1:
+                return 66
+            if throws == 2:
+                return 56
+            if throws == 3:
+                return 46
+        else:
+            return 0
     elif i == 9:
         return get_three(dices)
     elif i == 10:
@@ -32,7 +35,7 @@ def calc_val(dices, i, throws):
     elif i == 12:
         return get_yamb(dices)
     else:
-        print("Unexpected error!")
+        print("Unexpected error! Row index is", i, "expected values range from 0 to 12")
 
 
 def has_straight(dices):

@@ -28,7 +28,7 @@ class NeuralNetwork:
                     next 2 neurons does not matter
                 if writing result,
                     next 4 bits represent binary value of column index - range from 0 to 5, others invoke invalid_action
-                    next 4 bits represent binary value of row index
+                    next 4 bits represent binary value of row index - range from 0 to 12, others invoke invalid_action
             9 output neurons
             neuron_list[2] = 9
 
@@ -44,23 +44,20 @@ class NeuralNetwork:
             self.bias_list = bias_list
             self.weight_list = weight_list
         else:
-            self.biases = [np.random.randn(y, 1) for y in self.neuron_list[1:]]
-            self.weights = [np.random.randn(y, x) for x, y in zip(self.neuron_list[:-1], self.neuron_list[1:])]
+            self.bias_list = [np.random.randn(y, 1) for y in self.neuron_list[1:]]
+            self.weight_list = [np.random.randn(y, x) for x, y in zip(self.neuron_list[:-1], self.neuron_list[1:])]
 
     def feed_forward(self, input):
+        input = np.reshape(input, (163, 1)) # reshaping array to matrix for dot product
         if len(input) != self.neuron_list[0]:
             print("Unexpected error, found", len(input), "items feeding nn, expected 163")
-
         for bias, weight in zip(self.bias_list, self.weight_list):
-            # TEST if sigmoid is applied to every element in np matrix
             input = aux.sigmoid(np.dot(weight, input) + bias)
         output = self.decode_output(input)
         return output
 
     def decode_output(self, raw_nn_output):
-        # raw_nn_output is np matrix, should be flattened to list
-        flattened = raw_nn_output.tolist()  # double list
-        output = flattened[0]  # list of output values
+        output = np.ndarray.flatten(raw_nn_output)
         if len(output) != 9:
             print("Output of nn is", len(raw_nn_output), "expected 9")
         if output[0] < 0.5:
@@ -68,11 +65,20 @@ class NeuralNetwork:
             dices_set = set()
             for i in range(1, 7):
                 if output[i] > 0.5:  # dice that should be rolled
-                    dices_set.add(i)
+                    dices_set.add(i-1)
             ret = [0, dices_set]
         else:
-            # TODO convert binary values to indexes
-            pass
+            column_index = 0
+            row_index = 0
+            if output[1] > 0.5: column_index += 8
+            if output[2] > 0.5: column_index += 4
+            if output[3] > 0.5: column_index += 2
+            if output[4] > 0.5: column_index += 1
+            if output[5] > 0.5: row_index += 8
+            if output[6] > 0.5: row_index += 4
+            if output[7] > 0.5: row_index += 2
+            if output[8] > 0.5: row_index += 1
+            ret = [1, column_index, row_index]
         return ret
 
     def set_genes(self, *bias_and_weights):
@@ -97,16 +103,26 @@ class NeuralNetwork:
         table = [yamb.Column(i) for i in range(6)]
         self.game = yamb.Yamb(table)
 
-    def play_game(self):
-        self.new_game()
-        while not self.game.is_done:
-            self.game.roll_dices()
-            self.game.make_decision(self.feed_forward(self.prepare_input()))
-            # TODO continue work
-        #  TODO
-        #   some sort of flag to indicate if turn is ending prematurely
-        #   if it is, continue to next iteration
-        #   if not, 3 more dice rolling
+    def play_game(self, iterations=1):
+        for _ in range(iterations):
+            self.new_game()
+            while not self.game.is_done():
+                # print("New turn")
+                self.game.roll_dices()
+                # while not writing result, keep making decisions
+                # func game.make_decision provides maximum of 3 rolls in 1 turn
+                while not self.game.make_decision(self.feed_forward(self.prepare_input())):
+                    pass
+                self.game.fields_filled += 1
+                # either invalid action(more than 3 rolls), or premature writing
+                # in both cases continue with new turn
+                if self.game.fields_filled == 78:
+                    break
+            # game is finished
+            self.games_played += 1
+            self.evaluate_fitness()
+            # self.game.print_table()
+            # print("Game is finished, score is", self.game.get_table_sum())
 
     def prepare_input(self):
         """
@@ -115,13 +131,19 @@ class NeuralNetwork:
                     field is_unlocked flag
                     dice values
         """
-        # TEST if ret does not contain lists
         ret = self.game.get_all_fields()
-        ret.append(self.game.get_dices())
+        ret.extend(self.game.get_dices())
         ret.append(self.game.get_throws())
         return ret
 
     def evaluate_fitness(self):
         self.score_sum += self.game.get_table_sum()
-        self.fitness = float(self.score_sum)/self.games_played
+        self.fitness = float(self.score_sum) / self.games_played
+        print("New fitness is", self.fitness)
         return self.fitness
+
+
+if __name__ == '__main__':
+    nn = NeuralNetwork(500)
+    nn.new_game()
+    nn.play_game()
