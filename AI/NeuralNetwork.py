@@ -1,11 +1,13 @@
 import numpy as np
+from random import uniform
 import util.aux_funcs as aux
 import game.Yamb as yamb
+from threading import Thread
 
 
-class NeuralNetwork:
+class NeuralNetwork(Thread):
 
-    def __init__(self, hidden_neurons, bias_list=None, weight_list=None):
+    def __init__(self, hidden_neurons, iterations,bias_list=None, weight_list=None):
         """
         neuron_list = [15, 10 5] means nn has 3 layers; 15 neurons for input, 10 hidden, 5 output
 
@@ -35,6 +37,8 @@ class NeuralNetwork:
         Fitness is avg value of game score over lifetime
         """
         self.game = None
+        self.age = 0  # generations survived
+        self.iterations = iterations
         self.neuron_list = [163, hidden_neurons, 9]
         self.layer_num = len(self.neuron_list)
         self.score_sum = 0
@@ -81,23 +85,34 @@ class NeuralNetwork:
             ret = [1, column_index, row_index]
         return ret
 
-    def set_genes(self, *bias_and_weights):
-        self.bias_list, self.weight_list = bias_and_weights
+    def set_genes(self, bias_and_weights):
+        self.bias_list = bias_and_weights[0]
+        self.weight_list = bias_and_weights[1]
 
     def get_genes(self):
-        return self.bias_list, self.weight_list
+        return [self.bias_list, self.weight_list]
 
     def mutate_genes(self):
-        """
-        for every bias and weight
-            chance to mutate, chance initialy large, reducing with "time"
-        """
+        for i in range(len(self.weight_list)):
+            for j in range(len(self.weight_list[i])):
+                self.weight_list[i][j] *= uniform(0.9, 1.1)  # 10% mutation
+
+        for i in range(len(self.bias_list)):
+            for j in range(len(self.bias_list[i])):
+                self.bias_list[i][j] *= uniform(0.9, 1.1)  # 10% mutation
 
     def reproduce_with_mutation(self):
-        offspring = NeuralNetwork(self.neuron_list)
+        """
+        There is not reason to reproduce without mutation
+        """
+        offspring = NeuralNetwork(self.neuron_list[1], self.iterations)
         offspring.set_genes(self.get_genes())
         offspring.mutate_genes()
         return offspring
+
+    def reproduce_with_crossover(self, ind1, ind2):
+        # TODO
+        pass
 
     def new_game(self):
         table = [yamb.Column(i) for i in range(6)]
@@ -108,22 +123,19 @@ class NeuralNetwork:
         for _ in range(iterations):
             self.new_game()
             while not self.game.is_done():
-                # print("New turn")
                 self.game.roll_dices()
                 # while not writing result, keep making decisions
                 # func game.make_decision provides maximum of 3 rolls in 1 turn
                 while not self.game.make_decision(self.feed_forward(self.prepare_input())):
                     pass
                 self.game.fields_filled += 1
-                # either invalid action(more than 3 rolls), or premature writing
-                # in both cases continue with new turn
                 if self.game.fields_filled == 78:
                     break
+                # either invalid action(more than 3 rolls), or premature writing
+                # in both cases continue with new turn
             # game is finished
             self.games_played += 1
             self.evaluate_fitness()
-            # self.game.print_table()
-            # print("Game is finished, score is", self.game.get_table_sum())
 
     def prepare_input(self):
         """
@@ -140,10 +152,13 @@ class NeuralNetwork:
     def evaluate_fitness(self):
         self.score_sum += self.game.get_table_sum()
         self.fitness = float(self.score_sum) / self.games_played
-        print("New fitness is", self.fitness)
+        # print("New fitness is", self.fitness)
         return self.fitness
+
+    def run(self):
+        self.play_game(self.iterations)
 
 
 if __name__ == '__main__':
-    nn = NeuralNetwork(500)
+    nn = NeuralNetwork(500, 30)
     nn.play_game(20)
