@@ -42,6 +42,10 @@ class Trainer:
         # exploring
         print("start", len(self.population))
         for i in range(self.iterations):
+            # clear zeroes
+            for index in reversed(range(len(self.population[:]))):  # iterating through copy of population
+                if self.population[index].fitness == 0 and i != 0:
+                    self.population.pop(index)
             # run
             for individual in self.population:
                 individual.age += 1
@@ -56,14 +60,17 @@ class Trainer:
         # done exploring, population size is large enough
 
         # printing result
-        self.sort_population()
-        print("*******")
-        for individual in self.population:
-            print(individual.fitness)
-        print("*******")
+        # self.sort_population()
+        # print("*******")
+        # for individual in self.population:
+        #     print(individual.fitness)
+        # print("*******")
         # annealing
         while len(self.population) > 1:
-
+            # clear zeroes
+            for index in reversed(range(len(self.population[:]))):  # iterating through copy of population
+                if self.population[index].fitness == 0:
+                    self.population.pop(index)
             # run
             for individual in self.population:
                 individual.age += 1
@@ -84,6 +91,8 @@ class Trainer:
 
 
 if __name__ == '__main__':
-    trainer = Trainer(800, 5, 5, 40)
+    # hidden_neurons, evolving_iterations, game_iterations, population_size
+    trainer = Trainer(300, 2, 3, 500)
     best = trainer.evolve()
     print("Best score is", best.fitness)
+    best.game.print_table()

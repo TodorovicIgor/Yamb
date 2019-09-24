@@ -1,5 +1,5 @@
 import numpy as np
-from random import uniform
+from random import uniform, random
 import util.aux_funcs as aux
 import game.Yamb as yamb
 from threading import Thread
@@ -111,8 +111,23 @@ class NeuralNetwork(Thread):
         return offspring
 
     def reproduce_with_crossover(self, ind1, ind2):
-        # TODO
-        pass
+        # biases are 2d array
+        bias1 = ind1.get_genes[0]
+        bias_list1 = bias1[0]
+        bias2 = ind2.get_genes[0]
+        bias_list2 = bias2[0]
+        weight1 = ind1.get_genes[1]
+        weight2 = ind2.get_genes[1]
+        new_bias = []
+
+        for bias_elem1, bias_elem2 in zip(bias_list1, bias_list2):
+            if random() > 0.5:
+                new_bias.append(bias_elem1)
+            else:
+                new_bias.append(bias_elem2)
+        print("new bias is", new_bias)
+
+
 
     def new_game(self):
         table = [yamb.Column(i) for i in range(6)]
