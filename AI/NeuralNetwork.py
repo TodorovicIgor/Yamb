@@ -95,39 +95,49 @@ class NeuralNetwork(Thread):
     def mutate_genes(self):
         for i in range(len(self.weight_list)):
             for j in range(len(self.weight_list[i])):
-                self.weight_list[i][j] *= uniform(0.9, 1.1)  # 10% mutation
+                self.weight_list[i][j] *= uniform(0.5, 1.5)  # 50% mutation
 
         for i in range(len(self.bias_list)):
             for j in range(len(self.bias_list[i])):
-                self.bias_list[i][j] *= uniform(0.9, 1.1)  # 10% mutation
+                self.bias_list[i][j] *= uniform(0.5, 1.5)  # 50% mutation
 
     def reproduce_with_mutation(self):
-        """
-        There is not reason to reproduce without mutation
-        """
         offspring = NeuralNetwork(self.neuron_list[1], self.iterations)
         offspring.set_genes(self.get_genes())
         offspring.mutate_genes()
         return offspring
 
-    def reproduce_with_crossover(self, ind1, ind2):
-        # biases are 2d array
-        bias1 = ind1.get_genes[0]
-        bias_list1 = bias1[0]
-        bias2 = ind2.get_genes[0]
-        bias_list2 = bias2[0]
-        weight1 = ind1.get_genes[1]
-        weight2 = ind2.get_genes[1]
+    def reproduce_with_crossover_and_mutation(self, ind1, ind2):
+        bias1 = ind1.get_genes()[0]
+        bias2 = ind2.get_genes()[0]
+        weight1 = ind1.get_genes()[1]
+        weight2 = ind2.get_genes()[1]
+        aux_bias = []
         new_bias = []
+        aux_weight = []
+        new_weight = []
+        for row_index in range(len(bias1)):
+            for elem_index in range(len(bias1[row_index])):
+                if random() > 0.5:
+                    aux_bias.append(bias1[row_index][elem_index])
+                else:
+                    aux_bias.append(bias2[row_index][elem_index])
+            new_bias.append(aux_bias)
+            aux_bias = []
 
-        for bias_elem1, bias_elem2 in zip(bias_list1, bias_list2):
-            if random() > 0.5:
-                new_bias.append(bias_elem1)
-            else:
-                new_bias.append(bias_elem2)
-        print("new bias is", new_bias)
+        for row_index in range(len(weight1)):
+            for elem_index in range(len(weight1[row_index])):
+                if random() > 0.5:
+                    aux_weight.append(weight1[row_index][elem_index])
+                else:
+                    aux_weight.append(weight2[row_index][elem_index])
+            new_weight.append(aux_weight)
+            aux_weight = []
 
-
+        offspring = NeuralNetwork(self.neuron_list[1], self.iterations)
+        offspring.set_genes([new_bias, new_weight])
+        offspring.mutate_genes()
+        return offspring
 
     def new_game(self):
         table = [yamb.Column(i) for i in range(6)]
@@ -137,18 +147,17 @@ class NeuralNetwork(Thread):
         self.new_game()
         for _ in range(iterations):
             self.new_game()
-            while not self.game.is_done():
+            while not self.game.is_done() and self.game.fields_filled < 78:
                 self.game.roll_dices()
                 # while not writing result, keep making decisions
                 # func game.make_decision provides maximum of 3 rolls in 1 turn
                 while not self.game.make_decision(self.feed_forward(self.prepare_input())):
                     pass
                 self.game.fields_filled += 1
-                if self.game.fields_filled == 78:
-                    break
                 # either invalid action(more than 3 rolls), or premature writing
                 # in both cases continue with new turn
             # game is finished
+            self.game.done = True
             self.games_played += 1
             self.evaluate_fitness()
 
@@ -167,7 +176,6 @@ class NeuralNetwork(Thread):
     def evaluate_fitness(self):
         self.score_sum += self.game.get_table_sum()
         self.fitness = float(self.score_sum) / self.games_played
-        # print("New fitness is", self.fitness)
         return self.fitness
 
     def run(self):
@@ -175,5 +183,8 @@ class NeuralNetwork(Thread):
 
 
 if __name__ == '__main__':
-    nn = NeuralNetwork(500, 30)
-    nn.play_game(20)
+    nn1 = NeuralNetwork(500, 30)
+    nn2 = NeuralNetwork(500, 30)
+    new = nn1.reproduce_with_crossover_and_mutation(nn1, nn2)
+    print("length of nn1 bias and weigth is", len(nn1.get_genes()[0][1]), len(nn1.get_genes()[1][1]))
+    print("length of new bias and weigth is", len(new.get_genes()[0][1]), len(new.get_genes()[1][1]))

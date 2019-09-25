@@ -9,7 +9,7 @@ def calc_val(dices, i, throws):
     if 0 <= i <= 5:
         sum = 0
         for dice in dices:
-            sum = dice.get_val() if dice.get_val() == i + 1 else sum
+            sum = sum+dice.get_val() if dice.get_val() == i + 1 else sum
         return sum
     elif i == 6 or i == 7:
         sum = 0
@@ -69,7 +69,7 @@ def get_three(dices):
         found.update({dice.get_val(): found[dice.get_val()]+1})
     for i in reversed(range(6)):
         if found[i + 1] >= 3:
-            return 3 * (i + 1)
+            return 3 * (i + 1)+20
     return 0
 
 
@@ -86,7 +86,7 @@ def get_four(dices):
         found.update({dice.get_val(): found[dice.get_val()]+1})
     for i in reversed(range(6)):
         if found[i + 1] >= 4:
-            return 4 * (i + 1)
+            return 4 * (i + 1)+40
     return 0
 
 
@@ -103,7 +103,7 @@ def get_yamb(dices):
         found.update({dice.get_val(): found[dice.get_val()]+1})
     for i in reversed(range(6)):
         if found[i + 1] >= 5:
-            return 5 * (i + 1)
+            return 5 * (i + 1)+50
     return 0
 
 
@@ -121,9 +121,9 @@ def get_full(dices):
     for i in reversed(range(6)):
         for j in reversed(range(i)):
             if found[j + 1] >= 3 and found[i + 1] >= 2:
-                return 3 * (j + 1) + 2 * (i + 1)
+                return 3 * (j + 1) + 2 * (i + 1)+30
             elif found[j + 1] >= 2 and found[i + 1] >= 3:
-                return 2 * (j + 1) + 3 * (i + 1)
+                return 2 * (j + 1) + 3 * (i + 1)+30
     return 0
 
 

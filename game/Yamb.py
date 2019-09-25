@@ -125,15 +125,13 @@ class Yamb:
         return self.done
 
     def get_throws(self):
-        # TODO value should be normalized
-        return self.throws
+        return aux.sigmoid(self.throws)
 
     def get_all_fields(self):
-        # TODO values should be normalized
         ret = []
         for column in self.table:
             for field in column.fields:
-                ret.append(field.get_val())
+                ret.append(aux.sigmoid(field.get_val()))
                 if field.is_unlocked():
                     ret.append(1)
                 else:
@@ -141,10 +139,9 @@ class Yamb:
         return ret
 
     def get_dices(self):
-        # TODO values should be normalized
         ret = []
         for dice in self.dices:
-            ret.append(dice.get_val())
+            ret.append(aux.sigmoid(dice.get_val()))
         return ret
 
     def roll_dices(self, dice_index=None):
@@ -230,6 +227,7 @@ class Yamb:
                 sum2 = 0
             return sum1+sum2+sum3
         else:
+            print("summing table while game is still playing")
             return 0
 
     def print_table(self):
