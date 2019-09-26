@@ -37,7 +37,6 @@ class NeuralNetwork(Thread):
         Fitness is avg value of game score over lifetime
         """
         self.game = None
-        self.age = 0  # generations survived
         self.iterations = iterations
         self.neuron_list = [163, hidden_neurons, 9]
         self.layer_num = len(self.neuron_list)
@@ -47,9 +46,11 @@ class NeuralNetwork(Thread):
         if bias_list is not None and weight_list is not None:
             self.bias_list = bias_list
             self.weight_list = weight_list
+            self.age = 0
         else:
             self.bias_list = [np.random.randn(y, 1) for y in self.neuron_list[1:]]
             self.weight_list = [np.random.randn(y, x) for x, y in zip(self.neuron_list[:-1], self.neuron_list[1:])]
+            self.age = -1
 
     def feed_forward(self, input):
         input = np.reshape(input, (163, 1)) # reshaping array to matrix for dot product
@@ -95,11 +96,11 @@ class NeuralNetwork(Thread):
     def mutate_genes(self):
         for i in range(len(self.weight_list)):
             for j in range(len(self.weight_list[i])):
-                self.weight_list[i][j] *= uniform(0.5, 1.5)  # 50% mutation
+                self.weight_list[i][j] *= uniform(0.9, 1.1)  # 10% mutation
 
         for i in range(len(self.bias_list)):
             for j in range(len(self.bias_list[i])):
-                self.bias_list[i][j] *= uniform(0.5, 1.5)  # 50% mutation
+                self.bias_list[i][j] *= uniform(0.9, 1.1)  # 10% mutation
 
     def reproduce_with_mutation(self):
         offspring = NeuralNetwork(self.neuron_list[1], self.iterations)

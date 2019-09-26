@@ -5,6 +5,8 @@ from random import random, randint
 class Trainer:
 
     def __init__(self, hidden_neurons, evolving_iterations, game_iterations, population_size):
+        self.game_iterations = game_iterations
+        self.population_size = population_size
         self.iterations = evolving_iterations
         self.hidden_neurons = hidden_neurons
         self.population = [NeuralNetwork(self.hidden_neurons, game_iterations) for _ in range(population_size)]
@@ -23,23 +25,30 @@ class Trainer:
         if num > len(self.population):
             print("Population size is", len(self.population), ", trying to reproduce", num, "individuals")
         else:
-            for i in range(num):
+            for i in range(int(num/2)):
                 ind1 = self.population[i]
                 random_int = randint(0, int(len(self.population)/2))
 
                 # while random_int == i:
-                #     print(random_int)
+                #     print("rand is ", random_int, "population size is", (len(self.population)))
                 #     random_int = randint(0, (len(self.population)))
 
                 # 2 different individuals from upper half
                 new_individual = self.population[i].reproduce_with_crossover_and_mutation(ind1, self.population[random_int])
                 self.population.append(new_individual)
-                # print("inserted new individual with crossover, population size is", len(self.population))
+
+                new_individual = self.population[i].reproduce_with_crossover_and_mutation(ind1,self.population[random_int])
+                self.population.append(new_individual)
+
+    def fill_population(self):
+        while len(self.population) < self.population_size:
+            self.population.append(NeuralNetwork(self.hidden_neurons, self.game_iterations))
 
     def evolve(self):
         """
         working out evolving
         """
+        # working
         # exploring
         print("start", len(self.population))
         generation = 0
@@ -48,16 +57,24 @@ class Trainer:
             # first run
             if generation == 0:
                 for individual in self.population:
-                    individual.age += 1
                     individual.run()
+                    generation += 1
             # sort
             self.sort_population()
 
+            # printing
+            for individual in reversed(self.population):
+                print("fitness is %.3f, age is %d" % (individual.fitness, individual.age))
+
             # remove
-            self.remove_worst(int(len(self.population)/2))
+            self.remove_worst(int(2*len(self.population)/3))
 
             # reproduce
             self.reproduce_best(len(self.population))
+
+            # fill population
+            self.fill_population()
+
             # run
             for individual in self.population:
                 individual.age += 1
@@ -66,41 +83,44 @@ class Trainer:
             if len(self.population) == 1:
                 return self.population[0]
 
-        # # printing result
-        # self.sort_population()
-        # print("*******")
-        # for individual in self.population:
-        #     print(individual.fitness)
-        # print("*******")
-        # # annealing
-        # while len(self.population) > 1:
+        # exploring
+        # print("start", len(self.population))
+        # generation = 0
+        # for i in range(1, self.population_size):
+        #     print("population size is", len(self.population))
+        #     # first run
+        #     if generation == 0:
+        #         for individual in self.population:
+        #             individual.run()
+        #     # sort
+        #     self.sort_population()
+        #
+        #     # printing
+        #     for individual in reversed(self.population):
+        #         print("fitness is %.3f, age is %d" % (individual.fitness, individual.age))
+        #
+        #     # remove
+        #     self.remove_worst(len(self.population)-i)
+        #
         #     # reproduce
-        #     for index, individual in enumerate(self.population[:]):  # iterating through copy of population
-        #         if random() > 0.5:
-        #             new_individual = individual.reproduce_with_mutation()
-        #             self.population.pop(index)
-        #             self.population.append(new_individual)
+        #     self.reproduce_best(i)
+        #
+        #     # fill population
+        #     self.fill_population()
+        #
         #     # run
         #     for individual in self.population:
         #         individual.age += 1
         #         individual.run()
-        #     # sort
-        #     self.sort_population()
-        #     # remove
-        #     self.remove_worst(int(len(self.population) / 2))
-        #     if len(self.population) == 1: break
-        #     # reproduce
-        #     # for index, individual in enumerate(self.population[:]):  # iterating through copy of population
-        #     #     if random() > 0.5:
-        #     #         new_individual = individual.reproduce_with_mutation()
-        #     #         self.population.pop(index)
-        #     #         self.population.append(new_individual)
         #
+        #     # if len(self.population) == 1:
+        # return self.population[0]
 
 
 if __name__ == '__main__':
     # hidden_neurons, evolving_iterations, game_iterations, population_size
-    trainer = Trainer(200, 2, 2, 3)
+    # trainer = Trainer(200, 2, 3, 300)  # kod kuce
+    trainer = Trainer(200, 2, 2, 50)
     best = trainer.evolve()
     print("Best score is", best.fitness, "age is", best.age)
     best.game.print_table()
