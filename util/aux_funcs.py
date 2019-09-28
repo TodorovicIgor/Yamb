@@ -11,18 +11,38 @@ def calc_val(dices, i, throws):
         for dice in dices:
             sum = sum+dice.get_val() if dice.get_val() == i + 1 else sum
         return sum
-    elif i == 6 or i == 7:
+    elif i == 6:
+        """
+        for min value it is common sense to exclude maximum dice
+        """
         sum = 0
+        max = 0
         for dice in dices:
-            sum = dice.get_val()
-        return sum
+            if dice.get_val() > max:
+                max = dice.get_val()
+            sum += dice.get_val()
+        return sum-max
+    elif i == 7:
+        """
+        excluding minimum dice
+        """
+        sum = 0
+        min = 7
+        for dice in dices:
+            if dice.get_val() < min:
+                min = dice.get_val()
+            sum += dice.get_val()
+        return sum - min
     elif i == 8:
         if has_straight(dices):
             if throws == 1:
+                # print("this should print alot1")
                 return 66
             if throws == 2:
+                # print("this should print alot2")
                 return 56
             if throws == 3:
+                # print("this should print alot3")
                 return 46
         else:
             return 0

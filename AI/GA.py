@@ -25,7 +25,7 @@ class Trainer:
         if num > len(self.population):
             print("Population size is", len(self.population), ", trying to reproduce", num, "individuals")
         else:
-            for i in range(int(num/2)):
+            for i in range(int(num)):
                 ind1 = self.population[i]
                 random_int = randint(0, int(len(self.population)/2))
 
@@ -49,10 +49,9 @@ class Trainer:
         working out evolving
         """
         # working
-        # exploring
-        print("start", len(self.population))
+        print("starting population size is", len(self.population))
         generation = 0
-        while True:
+        for _ in range(self.iterations):
             print("population size is", len(self.population))
             # first run
             if generation == 0:
@@ -66,6 +65,11 @@ class Trainer:
             for individual in reversed(self.population):
                 print("fitness is %.3f, age is %d" % (individual.fitness, individual.age))
 
+            for individual in reversed(self.population):
+                if individual.age > 1:
+                    individual.game.print_table()
+                    break
+
             # remove
             self.remove_worst(int(2*len(self.population)/3))
 
@@ -73,25 +77,32 @@ class Trainer:
             self.reproduce_best(len(self.population))
 
             # fill population
-            self.fill_population()
+            # self.fill_population()
 
             # run
             for individual in self.population:
                 individual.age += 1
                 individual.run()
 
-            if len(self.population) == 1:
-                return self.population[0]
+            # if len(self.population) == 1:
+        return self.population[0]
 
-        # exploring
-        # print("start", len(self.population))
+        # INITIAL SELECTION
         # generation = 0
-        # for i in range(1, self.population_size):
+        # while len(self.population) < self.population_size:
+        #     # print(len(self.population), self.population_size)
+        #     new_individual = NeuralNetwork(self.hidden_neurons, self.game_iterations)
+        #     new_individual.run()
+        #     if new_individual.fitness>280:
+        #         print("appending wiht fitness", new_individual.fitness)
+        #         self.population.append(new_individual)
+        # self.reproduce_best(len(self.population))
+        # while True:
         #     print("population size is", len(self.population))
         #     # first run
-        #     if generation == 0:
-        #         for individual in self.population:
-        #             individual.run()
+        #     # if generation == 0:
+        #         # for individual in self.population:
+        #         #     individual.run()
         #     # sort
         #     self.sort_population()
         #
@@ -100,10 +111,10 @@ class Trainer:
         #         print("fitness is %.3f, age is %d" % (individual.fitness, individual.age))
         #
         #     # remove
-        #     self.remove_worst(len(self.population)-i)
+        #     self.remove_worst(int(len(self.population)/3))
         #
         #     # reproduce
-        #     self.reproduce_best(i)
+        #     self.reproduce_best(int(len(self.population)/3))
         #
         #     # fill population
         #     self.fill_population()
@@ -113,14 +124,15 @@ class Trainer:
         #         individual.age += 1
         #         individual.run()
         #
-        #     # if len(self.population) == 1:
-        # return self.population[0]
+        #     for i in self.population:
+        #         if i.fitness > 280 and i.age > 0:
+        #             return self.population[0]
 
 
 if __name__ == '__main__':
     # hidden_neurons, evolving_iterations, game_iterations, population_size
-    # trainer = Trainer(200, 2, 3, 300)  # kod kuce
-    trainer = Trainer(200, 2, 2, 50)
+    trainer = Trainer([500, 200, 100], 10, 5, 200)  # kod kuce
+    # trainer = Trainer(200, 2, 2, 50)
     best = trainer.evolve()
     print("Best score is", best.fitness, "age is", best.age)
     best.game.print_table()

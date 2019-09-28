@@ -22,9 +22,14 @@ class Field:
     def __init__(self):
         self.unlocked = False
         self.val = None
+        self.weight = 1
+        self.max = 0
 
     def unlock(self):
         self.unlocked = True
+
+    def set_weight(self, w):
+        self.weight = w
 
     def lock(self):
         self.unlocked = False
@@ -79,9 +84,9 @@ class Column:
         #  type == 3 is unlocked only on 1st throw
         if self.type == 4:
             # unlocking only fields that are locked and empty and in range
-            if index + 1 < 12 and not self.fields[index + 1].is_unlocked() and self.fields[index + 1].get_val() is None:
+            if index + 1 < 12 and not self.fields[index + 1].is_unlocked() and self.fields[index + 1].get_val() == 0:
                 self.fields[index + 1].unlock()
-            if index - 1 > 0 and not self.fields[index - 1].is_unlocked() and self.fields[index - 1].get_val() is None:
+            if index - 1 > 0 and not self.fields[index - 1].is_unlocked() and self.fields[index - 1].get_val() == 0:
                 self.fields[index - 1].unlock()
         if self.type == 5:
             # if index is in upper section, unlock only upper field

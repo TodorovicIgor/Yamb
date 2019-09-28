@@ -7,8 +7,9 @@ from threading import Thread
 
 class NeuralNetwork(Thread):
 
-    def __init__(self, hidden_neurons, iterations,bias_list=None, weight_list=None):
+    def __init__(self, hidden_neurons, iterations, bias_list=None, weight_list=None):
         """
+        hidden_neurons = list of hidden neurons
         neuron_list = [15, 10 5] means nn has 3 layers; 15 neurons for input, 10 hidden, 5 output
 
         INPUT NEURONS (Hard coded!!!):
@@ -19,9 +20,7 @@ class NeuralNetwork(Thread):
             neuron_list[0] = 163
 
         HIDDEN NEURONS:
-            Atm only 1 hidden layer
-            num of neurons passed as parameter, default value to be discovered
-            neuron_list[1]
+            list of hidden layers, example: [500, 200, 100]
 
         OUTPUT NEURONS (Hard coded!!!):
             1st neuron indicates decision - roll again (0) or write result (1)
@@ -38,7 +37,11 @@ class NeuralNetwork(Thread):
         """
         self.game = None
         self.iterations = iterations
-        self.neuron_list = [163, hidden_neurons, 9]
+        # self.neuron_list = [163, hidden_neurons, 9]
+        self.neuron_list = [163]
+        for neuron in hidden_neurons:
+            self.neuron_list.append(neuron)
+        self.neuron_list.append(9)
         self.layer_num = len(self.neuron_list)
         self.score_sum = 0
         self.fitness = 0
@@ -53,7 +56,7 @@ class NeuralNetwork(Thread):
             self.age = -1
 
     def feed_forward(self, input):
-        input = np.reshape(input, (163, 1)) # reshaping array to matrix for dot product
+        input = np.reshape(input, (163, 1))  # reshaping array to matrix for dot product
         if len(input) != self.neuron_list[0]:
             print("Unexpected error, found", len(input), "items feeding nn, expected 163")
         for bias, weight in zip(self.bias_list, self.weight_list):
@@ -103,7 +106,8 @@ class NeuralNetwork(Thread):
                 self.bias_list[i][j] *= uniform(0.9, 1.1)  # 10% mutation
 
     def reproduce_with_mutation(self):
-        offspring = NeuralNetwork(self.neuron_list[1], self.iterations)
+        hidden_neurons = self.neuron_list[1:-1]
+        offspring = NeuralNetwork(hidden_neurons, self.iterations)
         offspring.set_genes(self.get_genes())
         offspring.mutate_genes()
         return offspring
@@ -135,7 +139,8 @@ class NeuralNetwork(Thread):
             new_weight.append(aux_weight)
             aux_weight = []
 
-        offspring = NeuralNetwork(self.neuron_list[1], self.iterations)
+        hidden_neurons = self.neuron_list[1:-1]
+        offspring = NeuralNetwork(hidden_neurons, self.iterations)
         offspring.set_genes([new_bias, new_weight])
         offspring.mutate_genes()
         return offspring
@@ -184,8 +189,7 @@ class NeuralNetwork(Thread):
 
 
 if __name__ == '__main__':
-    nn1 = NeuralNetwork(500, 30)
-    nn2 = NeuralNetwork(500, 30)
-    new = nn1.reproduce_with_crossover_and_mutation(nn1, nn2)
-    print("length of nn1 bias and weigth is", len(nn1.get_genes()[0][1]), len(nn1.get_genes()[1][1]))
-    print("length of new bias and weigth is", len(new.get_genes()[0][1]), len(new.get_genes()[1][1]))
+    nn1 = NeuralNetwork([300, 200], 30)
+    # new = nn1.reproduce_with_crossover_and_mutation(nn1, nn2)
+    print("length of nn1 bias and weigth is", len(nn1.get_genes()[0]), len(nn1.get_genes()[1]))
+    # print("length of new bias and weigth is", len(new.get_genes()[0][1]), len(new.get_genes()[1][1]))
