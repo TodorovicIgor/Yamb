@@ -1,14 +1,18 @@
 import util.aux_funcs as aux
 import game.Yamb as yamb
 import numpy as np
+from threading import Thread
 from keras import *
-from keras.layers import Dense,Activation
+from keras.layers import Dense, Activation
 
 
-class CSP:
+class CSP(Thread):
 
     def __init__(self, hidden_neurons, game_iterations):
+        super().__init__()
         self.hidden_neurons = hidden_neurons
+        table = [yamb.Column(i) for i in range(6)]
+        self.best_game = yamb.Yamb(table)
         self.game = None
         self.game_iterations = game_iterations
         self.model = Sequential()
@@ -164,8 +168,13 @@ class CSP:
             self.game.done = True
             # game is finished
             print("score is", self.game.get_table_sum())
+            if self.game.get_table_sum() > self.best_game.get_table_sum():
+                self.best_game = self.game
             self.game.print_table()
             self.new_game()
+
+    def run(self):
+        self.train()
 
 
 if __name__ == '__main__':

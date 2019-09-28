@@ -1,10 +1,14 @@
 from AI.NeuralNetwork import NeuralNetwork
+from threading import Thread
 from random import random, randint
+from game import Yamb as yamb
 
 
-class Trainer:
+class Trainer(Thread):
 
     def __init__(self, hidden_neurons, evolving_iterations, game_iterations, population_size):
+        table = [yamb.Column(i) for i in range(6)]
+        self.best_game = yamb.Yamb(table)
         self.game_iterations = game_iterations
         self.population_size = population_size
         self.iterations = evolving_iterations
@@ -61,6 +65,10 @@ class Trainer:
             # sort
             self.sort_population()
 
+            # saving best game
+            # if self.population[0].game.get_table_sum() > self.best_game.get_table_sum():
+            self.best_game = self.population[0].game
+
             # printing
             for individual in reversed(self.population):
                 print("fitness is %.3f, age is %d" % (individual.fitness, individual.age))
@@ -87,46 +95,8 @@ class Trainer:
             # if len(self.population) == 1:
         return self.population[0]
 
-        # INITIAL SELECTION
-        # generation = 0
-        # while len(self.population) < self.population_size:
-        #     # print(len(self.population), self.population_size)
-        #     new_individual = NeuralNetwork(self.hidden_neurons, self.game_iterations)
-        #     new_individual.run()
-        #     if new_individual.fitness>280:
-        #         print("appending wiht fitness", new_individual.fitness)
-        #         self.population.append(new_individual)
-        # self.reproduce_best(len(self.population))
-        # while True:
-        #     print("population size is", len(self.population))
-        #     # first run
-        #     # if generation == 0:
-        #         # for individual in self.population:
-        #         #     individual.run()
-        #     # sort
-        #     self.sort_population()
-        #
-        #     # printing
-        #     for individual in reversed(self.population):
-        #         print("fitness is %.3f, age is %d" % (individual.fitness, individual.age))
-        #
-        #     # remove
-        #     self.remove_worst(int(len(self.population)/3))
-        #
-        #     # reproduce
-        #     self.reproduce_best(int(len(self.population)/3))
-        #
-        #     # fill population
-        #     self.fill_population()
-        #
-        #     # run
-        #     for individual in self.population:
-        #         individual.age += 1
-        #         individual.run()
-        #
-        #     for i in self.population:
-        #         if i.fitness > 280 and i.age > 0:
-        #             return self.population[0]
+    def run(self):
+        self.evolve()
 
 
 if __name__ == '__main__':

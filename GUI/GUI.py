@@ -1,9 +1,11 @@
 from tkinter import Tk
 from tkinter.ttk import Frame, Button, Label, Style
 import game.Yamb as yamb
+from AI.CSP import CSP
+from AI.GA import Trainer
 
 
-class Example(Frame):
+class GUI(Frame):
 
     def __init__(self):
         """
@@ -12,6 +14,8 @@ class Example(Frame):
         """
         super().__init__()
         # self.left =
+        self.csp = CSP([500, 200, 100], 50)
+        self.ga = Trainer([500, 200, 100], 3, 2, 50)
         self.master.title("Yamb")
         Style().configure("TButton", padding=(10, 10, 10, 10),
                           font='serif 20')
@@ -53,7 +57,7 @@ class Example(Frame):
         self.rowconfigure(13, pad=3)        # yamb
 
         # init headers
-        Label(self, text="∇", borderwidth=6, relief="solid").grid(row=0, column=1)
+        Label(self, text="∇", borderwidth=3, relief="solid").grid(row=0, column=1)
         Label(self, text="∇Δ", borderwidth=3, relief="solid").grid(row=0, column=2)
         Label(self, text="Δ", borderwidth=3, relief="solid").grid(row=0, column=3)
         Label(self, text="R", borderwidth=3, relief="solid").grid(row=0, column=4)
@@ -105,11 +109,25 @@ class Example(Frame):
                 Label(self, text="0", borderwidth=3, relief="flat").grid(row=row_index, column=column_index)
         self.pack()
 
-    # def paint_table(self, talbe):
+    def paint_tables(self, csp, ga):
+        # painting ga
+        for column_index in range(len(ga.best_game.table)):
+            for field_index in range(len(ga.best_game.table[column_index].fields)):
+                Label(self, text=ga.best_game.table[column_index].fields[field_index].get_val(), borderwidth=3, relief="flat").grid(row=field_index+1, column=column_index+1)
+
+        # painting csp
+        for column_index in range(len(csp.best_game.table)):
+            for field_index in range(len(csp.best_game.table[column_index].fields)):
+                Label(self, text=csp.best_game.table[column_index].fields[field_index].get_val(), borderwidth=3, relief="flat").grid(row=field_index+1, column=column_index+9)
 
 
 if __name__ == '__main__':
+    gui = GUI()
     root = Tk()
-    app = Example()
-    root.mainloop()
+    gui.csp.run()
+    gui.ga.run()
+    while True:
+        gui.paint_tables(gui.csp, gui.ga)
+        root.update()
+    # root.mainloop()
 
