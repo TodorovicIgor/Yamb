@@ -14,8 +14,8 @@ class GUI(Frame):
         """
         super().__init__()
         # self.left =
-        self.csp = CSP([500, 200, 100], 50)
-        self.ga = Trainer([500, 200, 100], 3, 2, 50)
+        self.csp = CSP([500, 200, 100], 150)
+        self.ga = Trainer([500, 200, 100], 2, 2, 10)
         self.master.title("Yamb")
         Style().configure("TButton", padding=(10, 10, 10, 10),
                           font='serif 20')
@@ -126,8 +126,9 @@ if __name__ == '__main__':
     root = Tk()
     gui.csp.run()
     gui.ga.run()
-    while True:
-        gui.paint_tables(gui.csp, gui.ga)
-        root.update()
-    # root.mainloop()
+    # while True:
+    #     gui.paint_tables(gui.csp, gui.ga)
+    #     root.update()
+    gui.paint_tables(gui.csp, gui.ga)
+    root.mainloop()
 

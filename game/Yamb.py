@@ -166,13 +166,6 @@ class Yamb:
                     self.invalid_action()
         self.throws += 1
 
-    # def keep_dices(self, dice_index):
-    #     for index in dice_index:
-    #         if 1 <= index <= 6 and self.throws < 2:
-    #             self.dices[index].save()
-    #         else:
-    #             self.invalid_action()
-
     def invalid_action(self):
         wrote = False
         for column in self.table:
@@ -190,6 +183,7 @@ class Yamb:
         decoded = [0, dice index] or
         decoded = [1, column index, row index]
         """
+
         if self.throws <= 3:
             if decoded[0] == 0:
                 self.roll_dices(decoded[1])
@@ -202,12 +196,11 @@ class Yamb:
             return True
 
     def write_result(self, column_index, field_index):
-
-        self.throws = 0
         if 0 <= column_index <= 5:
             self.table[column_index].write_result(field_index, self.dices, self.throws)
         else:
             self.invalid_action()
+        self.throws = 0
 
     def get_table_sum(self):
         """
