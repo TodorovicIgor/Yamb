@@ -14,8 +14,8 @@ class GUI(Frame):
         """
         super().__init__()
         # self.left =
-        self.csp = CSP([500, 200, 100], 150)
-        self.ga = Trainer([500, 200, 100], 2, 2, 10)
+        self.csp = CSP([500, 200, 100], 500)
+        self.ga = Trainer([500, 200, 100], 4, 5, 500)
         self.master.title("Yamb")
         Style().configure("TButton", padding=(10, 10, 10, 10),
                           font='serif 20')
@@ -56,6 +56,9 @@ class GUI(Frame):
         self.rowconfigure(12, pad=3)        # fours
         self.rowconfigure(13, pad=3)        # yamb
 
+        self.rowconfigure(14, pad=3)        # score
+
+
         # init headers
         Label(self, text="∇", borderwidth=3, relief="solid").grid(row=0, column=1)
         Label(self, text="∇Δ", borderwidth=3, relief="solid").grid(row=0, column=2)
@@ -87,6 +90,8 @@ class GUI(Frame):
         Label(self, text="kare", borderwidth=3, relief="solid").grid(row=12, column=0)
         Label(self, text="yamb", borderwidth=3, relief="solid").grid(row=13, column=0)
 
+        Label(self, text="Score: ", borderwidth=3, relief="solid").grid(row=14, column=0)
+
         Label(self, text="1", borderwidth=3, relief="solid").grid(row=1, column=8)
         Label(self, text="2", borderwidth=3, relief="solid").grid(row=2, column=8)
         Label(self, text="3", borderwidth=3, relief="solid").grid(row=3, column=8)
@@ -101,6 +106,10 @@ class GUI(Frame):
         Label(self, text="kare", borderwidth=3, relief="solid").grid(row=12, column=8)
         Label(self, text="yamb", borderwidth=3, relief="solid").grid(row=13, column=8)
 
+        Label(self, text="Score: ", borderwidth=3, relief="solid").grid(row=14, column=8)
+
+
+
         # init zeroes
         for column_index in range(1, 15):
             if column_index == 8 or column_index == 7:  # header
@@ -114,11 +123,14 @@ class GUI(Frame):
         for column_index in range(len(ga.best_game.table)):
             for field_index in range(len(ga.best_game.table[column_index].fields)):
                 Label(self, text=ga.best_game.table[column_index].fields[field_index].get_val(), borderwidth=3, relief="flat").grid(row=field_index+1, column=column_index+1)
+        Label(self, text=ga.best_game.get_table_sum(), borderwidth=3, relief="solid").grid(row=14, column=1)
+
 
         # painting csp
         for column_index in range(len(csp.best_game.table)):
             for field_index in range(len(csp.best_game.table[column_index].fields)):
                 Label(self, text=csp.best_game.table[column_index].fields[field_index].get_val(), borderwidth=3, relief="flat").grid(row=field_index+1, column=column_index+9)
+        Label(self, text=csp.best_game.get_table_sum(), borderwidth=3, relief="solid").grid(row=14, column=9)
 
 
 if __name__ == '__main__':

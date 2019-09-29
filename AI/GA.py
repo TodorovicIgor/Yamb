@@ -66,8 +66,8 @@ class Trainer(Thread):
             self.sort_population()
 
             # saving best game
-            # if self.population[0].game.get_table_sum() > self.best_game.get_table_sum():
-            self.best_game = self.population[0].game
+            if self.population[0].game.get_table_sum() > self.best_game.get_table_sum():
+                self.best_game = self.population[0].game
 
             # printing
             for individual in reversed(self.population):
